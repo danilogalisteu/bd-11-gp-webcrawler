@@ -29,6 +29,18 @@ func main() {
 		fmt.Println("Error: too many arguments provided\nUsage: ./crawler <url>")
 		os.Exit(1)
 	}
+	if len(os.Args) > 2 {
+		_, err := fmt.Sscanf(os.Args[2], "%d", &maxConcurrency)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if len(os.Args) > 3 {
+			_, err := fmt.Sscanf(os.Args[3], "%d", &maxPages)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
 
 	baseURL, err := url.Parse(os.Args[1])
 	if err != nil {
