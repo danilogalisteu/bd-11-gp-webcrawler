@@ -25,6 +25,6 @@ func main() {
 	item := 0
 	for url, count := range pages {
 		item += 1
-		fmt.Printf("%02d: %2dx %s\n", item, count, url)
+		fmt.Printf("%d: %d %s\n", item, count, url)
 	}
 }
