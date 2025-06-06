@@ -32,6 +32,8 @@ func (cfg *config) addPageVisit(normalizedURL string) (isFirst bool) {
 
 func (cfg *config) crawlPage(rawCurrentURL string) {
 	defer cfg.wg.Done()
+	defer func(){<-cfg.concurrencyControl}()
+	cfg.concurrencyControl <- struct{}{}
 
 	sameDomain, err := checkSameDomain(cfg.baseURL.String(), rawCurrentURL)
 	if err != nil {

@@ -13,6 +13,7 @@ type config struct {
 	baseURL            *url.URL
 	mu                 *sync.Mutex
 	wg                 *sync.WaitGroup
+	concurrencyControl chan struct{}
 }
 
 func main() {
@@ -31,10 +32,11 @@ func main() {
 	}
 
 	cfg := config{
-		pages:   make(map[string]int),
-		baseURL: baseURL,
-		mu:      &sync.Mutex{},
-		wg:      &sync.WaitGroup{},
+		pages:              make(map[string]int),
+		baseURL:            baseURL,
+		mu:                 &sync.Mutex{},
+		wg:                 &sync.WaitGroup{},
+		concurrencyControl: make(chan struct{}, 5),
 	}
 	fmt.Printf("starting crawl of: %s\n", cfg.baseURL)
 
