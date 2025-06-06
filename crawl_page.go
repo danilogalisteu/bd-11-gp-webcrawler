@@ -18,6 +18,16 @@ func checkSameDomain(baseURL, currentURL string) (bool, error) {
 	return partsBase.Hostname() == partsCurrent.Hostname(), nil
 }
 
+func addPageVisit(normalizedURL string, pages map[string]int) (isFirst bool) {
+	count, exists := pages[normalizedURL]
+	if exists {
+		pages[normalizedURL] = count + 1
+		return false
+	}
+	pages[normalizedURL] = 1
+	return true
+}
+
 func crawlPage(rawBaseURL, rawCurrentURL string, pages map[string]int) {
 	sameDomain, err := checkSameDomain(rawBaseURL, rawCurrentURL)
 	if err != nil {
@@ -31,12 +41,10 @@ func crawlPage(rawBaseURL, rawCurrentURL string, pages map[string]int) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	count, exists := pages[normUrl]
-	if exists {
-		pages[normUrl] = count + 1
+
+	if !addPageVisit(normUrl, pages) {
 		return
 	}
-	pages[normUrl] = 1
 
 	fmt.Printf("crawling %s...\n", rawCurrentURL)
 	html, err := getHTML(rawCurrentURL)
