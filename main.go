@@ -2,8 +2,15 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/url"
 	"os"
 )
+
+type config struct {
+	pages   map[string]int
+	baseURL *url.URL
+}
 
 func main() {
 	if len(os.Args) < 2 {
@@ -15,15 +22,22 @@ func main() {
 		os.Exit(1)
 	}
 
-	baseUrl := os.Args[1]
-	fmt.Printf("starting crawl of: %s\n", baseUrl)
+	baseURL, err := url.Parse(os.Args[1])
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	pages := make(map[string]int)
-	crawlPage(baseUrl, baseUrl, pages)
+	cfg := config{
+		pages:   make(map[string]int),
+		baseURL: baseURL,
+	}
+	fmt.Printf("starting crawl of: %s\n", cfg.baseURL)
+
+	cfg.crawlPage(cfg.baseURL.String())
 
 	fmt.Println("Crawling results:")
 	item := 0
-	for url, count := range pages {
+	for url, count := range cfg.pages {
 		item += 1
 		fmt.Printf("%d: %d %s\n", item, count, url)
 	}

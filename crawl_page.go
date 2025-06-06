@@ -18,18 +18,18 @@ func checkSameDomain(baseURL, currentURL string) (bool, error) {
 	return partsBase.Hostname() == partsCurrent.Hostname(), nil
 }
 
-func addPageVisit(normalizedURL string, pages map[string]int) (isFirst bool) {
-	count, exists := pages[normalizedURL]
+func (cfg *config) addPageVisit(normalizedURL string) (isFirst bool) {
+	count, exists := cfg.pages[normalizedURL]
 	if exists {
-		pages[normalizedURL] = count + 1
+		cfg.pages[normalizedURL] = count + 1
 		return false
 	}
-	pages[normalizedURL] = 1
+	cfg.pages[normalizedURL] = 1
 	return true
 }
 
-func crawlPage(rawBaseURL, rawCurrentURL string, pages map[string]int) {
-	sameDomain, err := checkSameDomain(rawBaseURL, rawCurrentURL)
+func (cfg *config) crawlPage(rawCurrentURL string) {
+	sameDomain, err := checkSameDomain(cfg.baseURL.String(), rawCurrentURL)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,7 +42,7 @@ func crawlPage(rawBaseURL, rawCurrentURL string, pages map[string]int) {
 		log.Fatal(err)
 	}
 
-	if !addPageVisit(normUrl, pages) {
+	if !cfg.addPageVisit(normUrl) {
 		return
 	}
 
@@ -52,12 +52,12 @@ func crawlPage(rawBaseURL, rawCurrentURL string, pages map[string]int) {
 		fmt.Printf("%s: non-HTML link found, skipping...\n", rawCurrentURL)
 	}
 
-	urls, err := getURLsFromHTML(html, rawBaseURL)
+	urls, err := getURLsFromHTML(html, cfg.baseURL.String())
 	if err != nil {
 		log.Fatal(err)
 	}
 	for _, url := range urls {
 		fmt.Printf("checking %s...\n", url)
-		crawlPage(rawBaseURL, url, pages)
+		cfg.crawlPage(url)
 	}
 }
