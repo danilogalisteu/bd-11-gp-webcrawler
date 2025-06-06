@@ -19,6 +19,8 @@ func checkSameDomain(baseURL, currentURL string) (bool, error) {
 }
 
 func (cfg *config) addPageVisit(normalizedURL string) (isFirst bool) {
+    cfg.mu.Lock()
+    defer cfg.mu.Unlock()
 	count, exists := cfg.pages[normalizedURL]
 	if exists {
 		cfg.pages[normalizedURL] = count + 1

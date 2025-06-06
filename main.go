@@ -5,11 +5,13 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"sync"
 )
 
 type config struct {
-	pages   map[string]int
-	baseURL *url.URL
+	pages              map[string]int
+	baseURL            *url.URL
+	mu                 *sync.Mutex
 }
 
 func main() {
@@ -30,6 +32,7 @@ func main() {
 	cfg := config{
 		pages:   make(map[string]int),
 		baseURL: baseURL,
+		mu:      &sync.Mutex{},
 	}
 	fmt.Printf("starting crawl of: %s\n", cfg.baseURL)
 
