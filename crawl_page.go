@@ -35,6 +35,13 @@ func (cfg *config) crawlPage(rawCurrentURL string) {
 	defer func(){<-cfg.concurrencyControl}()
 	cfg.concurrencyControl <- struct{}{}
 
+	cfg.mu.Lock()
+	numPages := len(cfg.pages)
+	cfg.mu.Unlock()
+	if numPages >= cfg.maxPages {
+		return
+	}
+
 	sameDomain, err := checkSameDomain(cfg.baseURL.String(), rawCurrentURL)
 	if err != nil {
 		log.Fatal(err)

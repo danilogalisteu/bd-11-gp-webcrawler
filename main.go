@@ -14,14 +14,18 @@ type config struct {
 	mu                 *sync.Mutex
 	wg                 *sync.WaitGroup
 	concurrencyControl chan struct{}
+	maxPages           int
 }
 
 func main() {
+	maxConcurrency := 5
+	maxPages := 100
+
 	if len(os.Args) < 2 {
-		fmt.Println("Error: no website provided\nUsage: ./crawler <url>")
+		fmt.Println("Error: no website provided\nUsage: ./crawler <url> [maxConcurrency [maxPages]]")
 		os.Exit(1)
 	}
-	if len(os.Args) > 2 {
+	if len(os.Args) > 4 {
 		fmt.Println("Error: too many arguments provided\nUsage: ./crawler <url>")
 		os.Exit(1)
 	}
@@ -36,7 +40,8 @@ func main() {
 		baseURL:            baseURL,
 		mu:                 &sync.Mutex{},
 		wg:                 &sync.WaitGroup{},
-		concurrencyControl: make(chan struct{}, 5),
+		concurrencyControl: make(chan struct{}, maxConcurrency),
+		maxPages:           maxPages,
 	}
 	fmt.Printf("starting crawl of: %s\n", cfg.baseURL)
 
