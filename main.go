@@ -12,6 +12,7 @@ type config struct {
 	pages              map[string]int
 	baseURL            *url.URL
 	mu                 *sync.Mutex
+	wg                 *sync.WaitGroup
 }
 
 func main() {
@@ -33,11 +34,14 @@ func main() {
 		pages:   make(map[string]int),
 		baseURL: baseURL,
 		mu:      &sync.Mutex{},
+		wg:      &sync.WaitGroup{},
 	}
 	fmt.Printf("starting crawl of: %s\n", cfg.baseURL)
 
-	cfg.crawlPage(cfg.baseURL.String())
+	cfg.wg.Add(1)
+	go cfg.crawlPage(cfg.baseURL.String())
 
+	cfg.wg.Wait()
 	fmt.Println("Crawling results:")
 	item := 0
 	for url, count := range cfg.pages {

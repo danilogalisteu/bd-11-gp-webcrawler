@@ -31,6 +31,8 @@ func (cfg *config) addPageVisit(normalizedURL string) (isFirst bool) {
 }
 
 func (cfg *config) crawlPage(rawCurrentURL string) {
+	defer cfg.wg.Done()
+
 	sameDomain, err := checkSameDomain(cfg.baseURL.String(), rawCurrentURL)
 	if err != nil {
 		log.Fatal(err)
@@ -60,6 +62,7 @@ func (cfg *config) crawlPage(rawCurrentURL string) {
 	}
 	for _, url := range urls {
 		fmt.Printf("checking %s...\n", url)
-		cfg.crawlPage(url)
+		cfg.wg.Add(1)
+		go cfg.crawlPage(url)
 	}
 }
