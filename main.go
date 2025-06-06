@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"maps"
 	"net/url"
 	"os"
+	"sort"
 	"sync"
 )
 
@@ -15,6 +17,30 @@ type config struct {
 	wg                 *sync.WaitGroup
 	concurrencyControl chan struct{}
 	maxPages           int
+}
+
+type ReportItem struct {
+	url   string
+	count int
+}
+
+func sortPages(pages map[string]int) []ReportItem {
+	sorted := []ReportItem{}
+	for k, v := range maps.All(pages) {
+		sorted = append(sorted, ReportItem{url: k, count: v})
+	}
+	sort.Slice(sorted, func(i, j int) bool {return sorted[i].url < sorted[j].url})
+	sort.SliceStable(sorted, func(i, j int) bool {return sorted[i].count > sorted[j].count})
+	return sorted
+}
+
+func printReport(pages map[string]int, baseURL string) {
+	fmt.Printf("=============================\n")
+	fmt.Printf("  REPORT for %s\n", baseURL)
+	fmt.Printf("=============================\n")
+	for _, item := range sortPages(pages) {
+		fmt.Printf("Found %d internal links to %s\n", item.count, item.url)
+	}
 }
 
 func main() {
@@ -61,10 +87,5 @@ func main() {
 	go cfg.crawlPage(cfg.baseURL.String())
 
 	cfg.wg.Wait()
-	fmt.Println("Crawling results:")
-	item := 0
-	for url, count := range cfg.pages {
-		item += 1
-		fmt.Printf("%d: %d %s\n", item, count, url)
-	}
+	printReport(cfg.pages, cfg.baseURL.String())
 }
